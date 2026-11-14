@@ -1,0 +1,11 @@
+{
+  "name": "gm-map",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Real-world driving navigation drawn like a video-game map.",
+  "scripts": {
+    "start": "node tools/serve.mjs",
+    "test": "node --test tests/geo.test.mjs tests/nav.test.mjs"
+  }
+}

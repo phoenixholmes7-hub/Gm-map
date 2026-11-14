@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#16181b">
+  <meta name="description" content="Real-world driving navigation drawn like a video-game map.">
+  <title>GM Map</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="vendor/maplibre/maplibre-gl.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body data-theme="heist">
+  <div id="map" aria-label="Map"></div>
+  <div id="fx" aria-hidden="true"></div>
+
+  <div id="hud">
+    <div id="top">
+      <form id="search" class="panel" role="search" autocomplete="off">
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M10.5 17a6.5 6.5 0 1 0 0-13 6.5 6.5 0 0 0 0 13z M15.5 15.5 21 21"/></svg>
+        <input id="q" type="search" placeholder="Where to?" aria-label="Search for a place" enterkeyhint="search" autocapitalize="off" spellcheck="false">
+        <button type="button" id="q-clear" aria-label="Clear search" hidden>
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+        </button>
+      </form>
+      <ul id="results" class="panel" hidden></ul>
+
+      <div id="banner" class="panel" role="status" aria-live="polite" hidden>
+        <div id="banner-arrow"></div>
+        <div id="banner-main">
+          <div id="banner-dist"></div>
+          <div id="banner-text"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="side">
+      <button type="button" class="fab" id="btn-themes" aria-label="Map style">
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 3 8l9 5 9-5z M3 12.5l9 5 9-5 M3 17l9 5 9-5"/></svg>
+      </button>
+      <button type="button" class="fab" id="btn-view" aria-label="Tilted 3D view" aria-pressed="true">3D</button>
+      <button type="button" class="fab" id="btn-compass" aria-label="Rotate map with heading" aria-pressed="true">
+        <svg class="ico needle" viewBox="0 0 24 24" aria-hidden="true"><path class="n" d="M12 2.5 16 12H8z"/><path class="s" d="M12 21.5 8 12h8z"/></svg>
+      </button>
+      <button type="button" class="fab" id="btn-voice" aria-label="Spoken directions" aria-pressed="true">
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5v5h3.5L12 19V5L7.5 9.5z M15.5 9a4 4 0 0 1 0 6 M18 6.5a7.5 7.5 0 0 1 0 11"/></svg>
+      </button>
+      <button type="button" class="fab" id="btn-locate" aria-label="Centre on my position">
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7.5a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9z M12 2v3.5 M12 18.5V22 M2 12h3.5 M18.5 12H22"/></svg>
+      </button>
+    </div>
+
+    <button type="button" id="speed" class="panel" aria-label="Speed. Tap to change units" hidden>
+      <b id="speed-val">0</b><span id="speed-unit">mph</span>
+    </button>
+
+    <button type="button" id="gps" class="panel" hidden>Turn on GPS</button>
+
+    <div id="sheet" class="panel" hidden>
+      <div id="sheet-title"></div>
+      <div id="sheet-sub"></div>
+      <div id="sheet-stats" hidden>
+        <div><b id="st-dist">0</b><span id="st-dist-unit">mi</span></div>
+        <div><b id="st-time">0</b><span>min</span></div>
+        <div><b id="st-eta">--:--</b><span>arrival</span></div>
+      </div>
+      <div id="sheet-actions">
+        <button type="button" id="btn-go" class="primary">Start</button>
+        <button type="button" id="btn-demo">Demo drive</button>
+        <button type="button" id="btn-cancel">Cancel</button>
+        <button type="button" id="btn-end" class="danger" hidden>End</button>
+      </div>
+    </div>
+
+    <div id="themes" class="panel" role="dialog" aria-label="Map style" hidden>
+      <div id="themes-head">
+        <strong>Map style</strong>
+        <button type="button" id="themes-close" aria-label="Close">
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+        </button>
+      </div>
+      <div id="theme-grid"></div>
+    </div>
+
+    <div id="arrival" role="status" hidden>
+      <div id="arrival-title"></div>
+      <div id="arrival-sub"></div>
+    </div>
+
+    <div id="toast" class="panel" role="status" aria-live="polite" hidden></div>
+  </div>
+
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>
