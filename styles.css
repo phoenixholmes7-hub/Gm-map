@@ -132,7 +132,11 @@ body[data-theme='terminal'] #fx {
 
 #results { list-style: none; margin: 0; padding: 4px 0; max-height: 46vh; overflow-y: auto; }
 #results li + li { border-top: 1px solid color-mix(in srgb, var(--ui-fg) 14%, transparent); }
-#results button { display: block; width: 100%; text-align: left; padding: 10px 14px; }
+#results button { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; padding: 10px 14px; }
+#results button .ico { color: var(--ui-dim); }
+#results button div { min-width: 0; }
+#results .head { display: flex; align-items: center; justify-content: space-between; padding: 6px 6px 6px 14px; font-size: 13px; color: var(--ui-dim); text-transform: uppercase; letter-spacing: 0.1em; }
+#results .head button { display: block; width: auto; padding: 6px 10px; font-size: 13px; color: var(--ui-accent); text-transform: uppercase; letter-spacing: 0.1em; }
 #results button:active { background: color-mix(in srgb, var(--ui-accent) 22%, transparent); }
 #results strong { display: block; font-size: 16px; font-weight: 600; letter-spacing: var(--ui-track); }
 #results span { display: block; font-size: 13px; color: var(--ui-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -166,8 +170,6 @@ body[data-theme='terminal'] #fx {
 }
 .fab:active { transform: scale(0.94); }
 .fab.on { background: var(--ui-accent); color: var(--ui-on-accent); }
-#btn-voice { display: none; }
-body.navigating #btn-voice { display: grid; }
 #btn-compass .needle { transform: rotate(var(--map-bearing, 0deg)); }
 #btn-compass .n { fill: currentColor; stroke: none; }
 #btn-compass .s { fill: none; }
@@ -248,12 +250,24 @@ body.navigating #sheet-actions { margin: 0; }
 .theme-card strong { display: block; padding: 8px 10px 0; font-family: var(--card-font); font-size: 15px; font-weight: 400; line-height: 1.2; }
 .theme-card span { display: block; padding: 2px 10px 9px; font-size: 12px; color: var(--ui-dim); }
 
+/* ---- options inside the style panel */
+.option { display: flex; align-items: center; justify-content: space-between; gap: 14px; width: 100%; margin-top: 12px; padding: 12px; text-align: left; border: 2px solid color-mix(in srgb, var(--ui-fg) 25%, transparent); border-radius: var(--ui-radius); }
+.option strong { display: block; font-size: 16px; font-weight: 600; letter-spacing: var(--ui-track); }
+.option small { display: block; margin-top: 2px; font-size: 12.5px; line-height: 1.3; color: var(--ui-dim); }
+.option i { flex: none; position: relative; width: 46px; height: 26px; border-radius: max(13px, var(--ui-radius)); background: color-mix(in srgb, var(--ui-fg) 22%, transparent); transition: background 0.15s; }
+.option i::after { content: ''; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: inherit; background: var(--ui-fg); transition: transform 0.15s; }
+.option[aria-pressed='true'] i { background: var(--ui-accent); }
+.option[aria-pressed='true'] i::after { transform: translateX(20px); background: var(--ui-on-accent); }
+body[data-theme='blocks'] .option i, body[data-theme='blocks'] .option i::after, body[data-theme='terminal'] .option i, body[data-theme='terminal'] .option i::after { border-radius: 0; }
+
 /* ---- arrival + toast ------------------------------------------------------------------- */
 #arrival {
   position: absolute; left: 0; right: 0; top: 36%;
   padding: 22px 16px;
   text-align: center;
-  background: linear-gradient(to right, transparent, var(--ui-bg) 18%, var(--ui-bg) 82%, transparent);
+  background: var(--ui-bg);
+  border-top: var(--ui-border);
+  border-bottom: var(--ui-border);
   pointer-events: none;
   z-index: 4;
   animation: arrive 0.5s ease-out;
@@ -284,6 +298,16 @@ body[data-theme='terminal'] .player svg { filter: drop-shadow(0 0 5px var(--play
 .dest svg { display: block; width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.5)); }
 .dest .pin { fill: var(--route); stroke: var(--player-stroke); stroke-width: 2.5; stroke-linejoin: round; }
 .dest .dot { fill: var(--player-stroke); }
+
+/* Ambient drivers: small coloured arrows with a name tag. */
+.driver { width: 22px; height: 22px; pointer-events: none; opacity: 0; transition: opacity 0.6s; }
+.driver.on { opacity: 1; }
+.driver svg { display: block; width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.6)); }
+.driver path { fill: var(--c); stroke: var(--player-stroke); stroke-width: 2.5; stroke-linejoin: round; paint-order: stroke; }
+.driver span { position: absolute; left: 50%; top: 100%; transform: translateX(-50%); margin-top: 2px; padding: 1px 5px; white-space: nowrap; font-family: var(--ui-font); font-size: 11px; letter-spacing: 0.04em; color: var(--c); background: color-mix(in srgb, var(--ui-bg) 85%, transparent); border-radius: var(--ui-radius); }
+body[data-theme='frontier'] .driver span { color: var(--ui-fg); }
+body[data-theme='terminal'] .driver { --c: #7dffa8 !important; }
+body.pip .driver span { display: none; }
 
 /* ---- MapLibre chrome ------------------------------------------------------------------- */
 .maplibregl-ctrl-bottom-right { bottom: calc(var(--sab) + var(--sheet-h) + 2px); right: var(--sar); z-index: 1; transition: bottom 0.2s ease; }

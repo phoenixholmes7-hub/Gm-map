@@ -10,6 +10,8 @@ import { searchPlaces, reverseGeocode } from './search.js';
 import { NavSession } from './nav.js';
 import { haversine, destination, lerp, lerpAngle, angleDiff, bounds } from './geo.js';
 import * as platform from './platform.js';
+import { playCue, setSoundEnabled, unlockAudio } from './sound.js';
+import { AmbientDrivers } from './traffic.js';
 import * as ui from './ui.js';
 
 const { el } = ui;
@@ -34,6 +36,8 @@ function loadSettings() {
     voice: true,
     tilt: true,
     headingUp: true,
+    drivers: true,
+    recent: [],
     last: null,
     ...saved,
   };
@@ -137,6 +141,11 @@ destEl.innerHTML =
   '<svg viewBox="0 0 34 44"><path class="pin" d="M17 42C17 42 3 26 3 16a14 14 0 0 1 28 0c0 10-14 26-14 26z"/><circle class="dot" cx="17" cy="16" r="5"/></svg>';
 const destMarker = new maplibregl.Marker({ element: destEl, anchor: 'bottom' });
 
+// Decorative computer-controlled cars (see traffic.js).
+const drivers = new AmbientDrivers(map, maplibregl.Marker, {
+  getPlayer: () => (player.has ? [player.shown.lng, player.shown.lat] : null),
+});
+
 // ---- theme ---------------------------------------------------------------------------------
 
 function applyTheme(id, { initial = false } = {}) {
@@ -230,6 +239,7 @@ function applyCamera() {
 
 function frame(now) {
   requestAnimationFrame(frame);
+  if (!document.hidden) drivers.tick(now);
   if (!player.has) return;
   const k = Math.min(1, (now - player.t0) / player.dur);
   const s = player.shown;
@@ -352,6 +362,26 @@ const origin = () => {
   return [c.lng, c.lat];
 };
 
+// ---- recent destinations -------------------------------------------------------------------
+
+const MAX_RECENT = 8;
+
+/** Put a destination at the top of the recents list (replacing an older copy of itself). */
+function remember(place) {
+  const entry = { name: place.name, detail: place.detail || '', lng: place.lng, lat: place.lat };
+  const same = (r) => haversine([r.lng, r.lat], [entry.lng, entry.lat]) < 40;
+  settings.recent = [entry, ...(settings.recent || []).filter((r) => !same(r))].slice(0, MAX_RECENT);
+  saveSettings();
+}
+
+function showRecents() {
+  ui.renderRecents(settings.recent, setDestination, () => {
+    settings.recent = [];
+    saveSettings();
+    ui.renderResults(null);
+  });
+}
+
 async function dropPin(lngLat) {
   const place = { name: theme.text.waypoint, detail: '', lng: lngLat.lng, lat: lngLat.lat };
   const pending = setDestination(place);
@@ -360,6 +390,7 @@ async function dropPin(lngLat) {
     if (named && state.dest === place) {
       place.name = named.name;
       place.detail = named.detail;
+      if (state.route) remember(place);
       if (state.mode === 'preview' && state.route) ui.sheetPreview(place, state.route, settings.units, { canStart: !!state.fix });
       else if (state.mode === 'preview') el.sheetTitle.textContent = place.name;
     }
@@ -378,6 +409,7 @@ async function setDestination(place) {
   state.mode = 'preview';
   setRouteLine(null);
   destMarker.setLngLat([place.lng, place.lat]).addTo(map);
+  cue('waypoint');
   ui.renderResults(null);
   el.q.value = '';
   el.q.blur();
@@ -391,6 +423,8 @@ async function setDestination(place) {
     setRouteLine(route.coords);
     setFollow(false);
     ui.sheetPreview(place, route, settings.units, { canStart: !!state.fix });
+    cue('route');
+    remember(place);
     const c = map.getContainer();
     map.fitBounds(bounds(route.coords), {
       padding: { top: Math.min(140, c.clientHeight * 0.2), bottom: Math.min(220, c.clientHeight * 0.34), left: 40, right: 76 },
@@ -401,6 +435,7 @@ async function setDestination(place) {
     });
   } catch (err) {
     if (err.name === 'AbortError' || state.dest !== place) return;
+    cue('error');
     ui.sheetError(place, navigator.onLine === false ? 'You appear to be offline' : err.final ? 'No drivable route found' : 'Routing service unavailable. Try again shortly.');
   }
 }
@@ -417,8 +452,20 @@ function clearDestination() {
 
 // ---- navigation ----------------------------------------------------------------------------
 
-function say(text) {
-  if (settings.voice && text) platform.speak(text);
+let speakTimer = 0;
+
+/** Play one of the current theme's sound cues; returns its length in ms. */
+function cue(name) {
+  return settings.voice ? playCue(theme.id, name) : 0;
+}
+
+/** Speak a line, optionally after a cue so the chime lands first and the voice follows. */
+function say(text, cueName) {
+  const lead = cueName ? Math.min(cue(cueName), 650) : 0;
+  clearTimeout(speakTimer);
+  if (!settings.voice || !text) return;
+  if (lead) speakTimer = setTimeout(() => platform.speak(text), lead);
+  else platform.speak(text);
 }
 
 function startNav({ demo = false } = {}) {
@@ -438,13 +485,14 @@ function startNav({ demo = false } = {}) {
     onFix(state.fix);
   }
   setFollow(true);
-  say(state.route.steps[0]?.text);
+  say(state.route.steps[0]?.text, 'start');
 }
 
 function endNav({ silent = false, arrived = false } = {}) {
   state.sim?.stop();
   state.sim = null;
   state.nav = null;
+  clearTimeout(speakTimer);
   platform.stopSpeaking();
   platform.setNavigating(false);
   ui.navMode(false);
@@ -452,7 +500,7 @@ function endNav({ silent = false, arrived = false } = {}) {
   platform.keepAwake(state.follow);
   if (arrived) {
     ui.showArrival(theme);
-    say(theme.text.arrivedSub);
+    say(theme.text.arrivedSub, 'arrive');
   } else if (!silent) {
     ui.toast('Navigation ended');
   }
@@ -475,7 +523,7 @@ async function reroute() {
     state.route = route;
     state.nav = new NavSession(route, { units: settings.units });
     setRouteLine(route.coords);
-    say('Route updated');
+    say('Route updated', 'reroute');
   } catch {
     /* keep the old route; we'll try again on a later fix */
   } finally {
@@ -498,7 +546,7 @@ function onFix(fix) {
     }
     ui.renderNav(n, settings.units);
     setRouteLine(state.nav.remainingLine(pos));
-    say(n.say);
+    if (n.say) say(n.say, 'turn');
     if (n.arrived) {
       setPlayerTarget(pos, heading, fix.speed);
       endNav({ arrived: true });
@@ -584,10 +632,16 @@ el.compassBtn.addEventListener('click', () => {
   }
 });
 
+// One switch for all audio: sound cues and spoken directions.
 el.voiceBtn.addEventListener('click', () => {
   settings.voice = !settings.voice;
   ui.setToggle(el.voiceBtn, settings.voice);
-  if (!settings.voice) platform.stopSpeaking();
+  setSoundEnabled(settings.voice);
+  if (settings.voice) cue('waypoint');
+  else {
+    clearTimeout(speakTimer);
+    platform.stopSpeaking();
+  }
   saveSettings();
 });
 
@@ -603,6 +657,7 @@ el.themesBtn.addEventListener('click', () => {
   ui.renderThemes(theme.id, (id) => {
     applyTheme(id);
     el.themes.hidden = true;
+    cue('route'); // let the new theme introduce itself
   });
   el.themes.hidden = !el.themes.hidden;
 });
@@ -639,7 +694,8 @@ el.q.addEventListener('input', () => {
   clearTimeout(searchTimer);
   if (q.length < 3) {
     searchAbort?.abort();
-    ui.renderResults(null);
+    if (q.length === 0) showRecents();
+    else ui.renderResults(null);
     return;
   }
   searchTimer = setTimeout(() => runSearch(q), 350);
@@ -654,9 +710,48 @@ el.qClear.addEventListener('click', () => {
   el.q.value = '';
   el.qClear.hidden = true;
   searchAbort?.abort();
-  ui.renderResults(null);
   el.q.focus();
+  showRecents();
 });
+el.q.addEventListener('focus', () => {
+  if (!el.q.value.trim()) showRecents();
+});
+
+el.driversBtn.addEventListener('click', () => {
+  settings.drivers = !settings.drivers;
+  el.driversBtn.setAttribute('aria-pressed', String(settings.drivers));
+  drivers.setEnabled(settings.drivers);
+  saveSettings();
+});
+
+// Android's Back button: close whatever is open before leaving the app. Returns true when
+// it did something, so the native shell knows not to background the app.
+let backArmedAt = 0;
+window.gmBack = () => {
+  if (!el.themes.hidden) {
+    el.themes.hidden = true;
+    return true;
+  }
+  if (!el.results.hidden) {
+    ui.renderResults(null);
+    el.q.blur();
+    return true;
+  }
+  if (state.mode === 'preview') {
+    clearDestination();
+    return true;
+  }
+  if (state.mode === 'nav') {
+    // Ending a route by accident mid-drive is worse than one extra press.
+    if (Date.now() - backArmedAt < 3000) endNav();
+    else {
+      backArmedAt = Date.now();
+      ui.toast('Press back again to end navigation');
+    }
+    return true;
+  }
+  return false;
+};
 
 // Keep the speed badge, toast and attribution clear of the bottom sheet.
 new ResizeObserver(() => {
@@ -687,6 +782,12 @@ applyTheme(theme.id, { initial: true });
 ui.setToggle(el.viewBtn, settings.tilt);
 ui.setToggle(el.compassBtn, settings.headingUp);
 ui.setToggle(el.voiceBtn, settings.voice);
+setSoundEnabled(settings.voice);
+el.driversBtn.setAttribute('aria-pressed', String(settings.drivers));
+drivers.setEnabled(settings.drivers);
+// Browsers hold audio back until the first touch; the Android app has no such rule.
+if (platform.isNativeApp) unlockAudio();
+window.addEventListener('pointerdown', unlockAudio, { once: true, capture: true });
 initGps();
 
 if ('serviceWorker' in navigator && !platform.isNativeApp && location.protocol === 'https:') {
@@ -694,4 +795,4 @@ if ('serviceWorker' in navigator && !platform.isNativeApp && location.protocol =
 }
 
 // Handy from the console, and used by the automated checks.
-window.gm = { map, state, settings, player, applyTheme, setDestination, startNav, endNav, onFix, setFollow };
+window.gm = { map, state, settings, player, drivers, applyTheme, setDestination, startNav, endNav, onFix, setFollow };

@@ -23,6 +23,8 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.window.OnBackInvokedCallback
+import android.window.OnBackInvokedDispatcher
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -134,6 +136,14 @@ class MainActivity : Activity(), TextToSpeech.OnInitListener {
 
         tts = TextToSpeech(this, this)
 
+        // Back closes panels and previews inside the app first (Android 13+ path).
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            onBackInvokedDispatcher.registerOnBackInvokedCallback(
+                OnBackInvokedDispatcher.PRIORITY_DEFAULT,
+                OnBackInvokedCallback { handleBack() },
+            )
+        }
+
         // GPS is always on: ask for location as soon as the app opens.
         if (!hasLocationPermission()) requestLocationPermission()
 
@@ -142,6 +152,24 @@ class MainActivity : Activity(), TextToSpeech.OnInitListener {
         } else {
             web.restoreState(savedInstanceState)
         }
+    }
+
+    // ---- back button -----------------------------------------------------------------------
+
+    /**
+     * Offers Back to the page (close a panel, cancel a route preview...). If the page had
+     * nothing to close, the app goes to the background rather than quitting, so the map and
+     * GPS are ready the moment it is reopened.
+     */
+    private fun handleBack() {
+        web.evaluateJavascript("(window.gmBack && window.gmBack()) ? 'handled' : 'pass'") { result ->
+            if (result == null || !result.contains("handled")) moveTaskToBack(true)
+        }
+    }
+
+    @Deprecated("Used on Android 12 and older; newer versions use the callback registered in onCreate")
+    override fun onBackPressed() {
+        handleBack()
     }
 
     // ---- location permission ---------------------------------------------------------------

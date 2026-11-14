@@ -4,19 +4,46 @@
 /** OpenMapTiles POI class -> glyph key. */
 export const POI_ICON = {
   cafe: 'cup',
-  restaurant: 'food', fast_food: 'food',
+  restaurant: 'food', fast_food: 'burger',
   bar: 'drink', beer: 'drink', alcohol_shop: 'drink',
   fuel: 'fuel',
-  shop: 'bag', clothing_store: 'bag', grocery: 'bag',
+  shop: 'bag', clothing_store: 'shirt', grocery: 'cart',
   hospital: 'cross', pharmacy: 'cross',
   police: 'shield',
   lodging: 'bed',
   bank: 'coin', atm: 'coin',
   parking: 'parking',
-  attraction: 'star', museum: 'star', castle: 'star', art_gallery: 'star', stadium: 'star', cinema: 'star', theatre: 'star',
+  attraction: 'star', castle: 'star', art_gallery: 'star', stadium: 'star',
+  museum: 'hall', town_hall: 'hall',
+  cinema: 'film', theatre: 'film',
+  music: 'note',
+  library: 'book', college: 'book',
+  post: 'mail',
   park: 'tree',
   car: 'car',
   railway: 'train',
+  harbor: 'anchor',
+  campsite: 'tent',
+  golf: 'flag',
+  sports_centre: 'dumbbell', fitness_centre: 'dumbbell',
+};
+
+/**
+ * Finer-grained icons keyed on the OpenStreetMap tag value (the tiles' `subclass`), so a
+ * barber, a gym and a phone shop don't all share the generic shopping bag.
+ */
+export const SUBCLASS_ICON = {
+  hairdresser: 'scissors', beauty: 'scissors',
+  clothes: 'shirt', shoes: 'shirt', boutique: 'shirt', fashion: 'shirt', tailor: 'shirt',
+  supermarket: 'cart', convenience: 'cart', greengrocer: 'cart',
+  gym: 'dumbbell',
+  car_repair: 'wrench', car_parts: 'wrench', tyres: 'wrench', hardware: 'wrench', doityourself: 'wrench',
+  food_court: 'burger',
+  nightclub: 'note', musical_instrument: 'note',
+  mobile_phone: 'phone', electronics: 'phone', computer: 'phone',
+  books: 'book',
+  post_office: 'mail',
+  courthouse: 'hall',
 };
 
 // f = filled path (even-odd), s = stroked path, t = single character drawn as text.
@@ -46,6 +73,37 @@ const GLYPHS = {
     f: 'M7.5 3h9A3.5 3.5 0 0 1 20 6.5v8a3.5 3.5 0 0 1-3.5 3.5h-9A3.5 3.5 0 0 1 4 14.5v-8A3.5 3.5 0 0 1 7.5 3z M7 6.5V11h10V6.5z M7.3 14.6a1.2 1.2 0 1 0 2.4 0 1.2 1.2 0 1 0-2.4 0z M14.3 14.6a1.2 1.2 0 1 0 2.4 0 1.2 1.2 0 1 0-2.4 0z',
     s: 'M8.5 18.5l-2 3 M15.5 18.5l2 3',
   },
+  shirt: { f: 'M8 3l4 2.5L16 3l5 3.5-2.5 4L16.5 9v12h-9V9L5.5 10.5 3 6.5z' },
+  scissors: {
+    s: 'M6.5 9.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z M6.5 19.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z M8.6 8.3 20 18 M8.6 15.7 20 6',
+  },
+  dumbbell: { f: 'M2 9h3v6H2z M5.5 7H8v10H5.5z M16 7h2.5v10H16z M19 9h3v6h-3z M8 11h8v2H8z' },
+  wrench: {
+    f: 'M20.3 6.2a4.5 4.5 0 0 1-6 5.3L7 18.8A2 2 0 1 1 4.2 16l7.3-7.3a4.5 4.5 0 0 1 5.3-6l-2.7 2.7.5 2.6 2.6.5z',
+  },
+  cart: {
+    f: 'M8.2 19.5a1.5 1.5 0 1 0 3 0 1.5 1.5 0 1 0-3 0z M15.2 19.5a1.5 1.5 0 1 0 3 0 1.5 1.5 0 1 0-3 0z',
+    s: 'M2.5 4h3l2.2 10.5H18l2-7.5H6.5',
+  },
+  burger: {
+    f: 'M4 10a8 5.5 0 0 1 16 0z M3.5 12h17v2.5h-17z M4 16.5h16v1a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 17.5z',
+  },
+  film: { f: 'M3 7h11v10H3z M14.5 11 20.5 7.5v9L14.5 13z' },
+  note: { f: 'M9 4.5 19 3v12.5a2.8 2.8 0 1 1-2-2.7V7.3l-6 .9v9.3a2.8 2.8 0 1 1-2-2.7z' },
+  book: {
+    f: 'M4 4.5h6.5a2 2 0 0 1 1.5.7 2 2 0 0 1 1.5-.7H20v14h-6.5a2 2 0 0 0-1.5.7 2 2 0 0 0-1.5-.7H4z M11.6 7v10h.8V7z',
+  },
+  mail: { s: 'M3.5 6.5h17v11h-17z M3.5 7l8.5 6.5L20.5 7' },
+  phone: {
+    f: 'M8 2.5h8A1.5 1.5 0 0 1 17.5 4v16a1.5 1.5 0 0 1-1.5 1.5H8A1.5 1.5 0 0 1 6.5 20V4A1.5 1.5 0 0 1 8 2.5z M8.5 5v12h7V5z',
+  },
+  anchor: {
+    f: 'M12 3a2.2 2.2 0 1 0 0 4.4A2.2 2.2 0 0 0 12 3z',
+    s: 'M12 7.5V21 M12 21c-4 0-7-2.5-7.5-6 M12 21c4 0 7-2.5 7.5-6 M8.5 11h7',
+  },
+  tent: { f: 'M12 3.5 21.5 20h-6L12 13l-3.5 7h-6z' },
+  flag: { f: 'M7 3.5l10 3.5-10 3.5z', s: 'M7 21V3.5 M4 21h9' },
+  hall: { f: 'M12 3l9 5v2H3V8z M5 11h2.5v7H5z M10.8 11h2.5v7h-2.5z M16.5 11H19v7h-2.5z M3 19h18v2H3z' },
   car: {
     f: 'M5.2 10.5 6.7 6.3A2 2 0 0 1 8.6 5h6.8a2 2 0 0 1 1.9 1.3l1.5 4.2A2.5 2.5 0 0 1 21 13v4.5h-2.2V19a1.3 1.3 0 0 1-2.6 0v-1.5H7.8V19a1.3 1.3 0 0 1-2.6 0v-1.5H3V13a2.5 2.5 0 0 1 2.2-2.5z M7.4 10.2h9.2l-1.1-3.2H8.5z M5.6 13.7a1.1 1.1 0 1 0 2.2 0 1.1 1.1 0 1 0-2.2 0z M16.2 13.7a1.1 1.1 0 1 0 2.2 0 1.1 1.1 0 1 0-2.2 0z',
   },
@@ -56,11 +114,17 @@ const TINT = {
   cup: '#c9793a', food: '#f08a24', drink: '#b455e0', fuel: '#e5484d', bag: '#3d8bfd', cross: '#e5484d',
   shield: '#3d6dfd', bed: '#19a6a6', coin: '#2fa84f', parking: '#3d6dfd', star: '#e6b400', tree: '#2f9e44',
   plane: '#3da5e0', train: '#6b7280', car: '#6b7280',
+  shirt: '#d6408f', scissors: '#d6408f', dumbbell: '#e5484d', wrench: '#6b7280', cart: '#2fa84f', burger: '#f08a24',
+  film: '#8e5ad6', note: '#8e5ad6', book: '#3d8bfd', mail: '#c9793a', phone: '#19a6a6', anchor: '#3d6dfd', tent: '#2f9e44',
+  flag: '#2f9e44', hall: '#8a8f98',
 };
 const NEON = {
   cup: '#ffb86b', food: '#ff9f43', drink: '#ff2bd6', fuel: '#ff5470', bag: '#19d3ff', cross: '#ff5470',
   shield: '#6c8cff', bed: '#3dffd2', coin: '#7dff6b', parking: '#6c8cff', star: '#fff23a', tree: '#3dff8f',
   plane: '#19d3ff', train: '#c8b6ff', car: '#c8b6ff',
+  shirt: '#ff5ac8', scissors: '#ff5ac8', dumbbell: '#ff5470', wrench: '#c8b6ff', cart: '#7dff6b', burger: '#ff9f43',
+  film: '#b388ff', note: '#b388ff', book: '#6c8cff', mail: '#ffb86b', phone: '#3dffd2', anchor: '#6c8cff', tent: '#3dff8f',
+  flag: '#3dff8f', hall: '#c8b6ff',
 };
 
 export const BLIP_PIXEL_RATIO = 2;

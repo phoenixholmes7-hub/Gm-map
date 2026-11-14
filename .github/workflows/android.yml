@@ -19,7 +19,7 @@ jobs:
           java-version: '21'
 
       - name: Unit tests (routing, navigation maths)
-        run: node --test tests/geo.test.mjs tests/nav.test.mjs
+        run: node --test tests/geo.test.mjs tests/nav.test.mjs tests/sound.test.mjs tests/traffic.test.mjs
 
       - name: Build debug APK
         working-directory: android

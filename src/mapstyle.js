@@ -2,7 +2,7 @@
 // OpenStreetMap vector tiles in the OpenMapTiles schema with no API key.
 
 import { fontFaces } from './themes.js';
-import { POI_ICON, blipId } from './icons.js';
+import { POI_ICON, SUBCLASS_ICON, blipId } from './icons.js';
 
 const TILES = 'https://tiles.openfreemap.org/planet';
 const GLYPHS = 'https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf';
@@ -245,12 +245,17 @@ export function buildStyle(theme, { routeData = EMPTY } = {}) {
 
   // Points of interest drawn as themed "blips".
   const poiKeys = Object.keys(POI_ICON);
-  const iconFor = ['match', ['get', 'class']];
-  for (const k of poiKeys) iconFor.push(k, blipId(theme, POI_ICON[k]));
-  iconFor.push(blipId(theme, 'star'));
+  const subKeys = Object.keys(SUBCLASS_ICON);
+  const byClass = ['match', ['get', 'class']];
+  for (const k of poiKeys) byClass.push(k, blipId(theme, POI_ICON[k]));
+  byClass.push(blipId(theme, 'star'));
+  // The specific kind of place wins over its broad class when we have an icon for it.
+  const iconFor = ['match', ['get', 'subclass']];
+  for (const k of subKeys) iconFor.push(k, blipId(theme, SUBCLASS_ICON[k]));
+  iconFor.push(byClass);
   add({
     id: 'label-poi', type: 'symbol', source: 'omt', 'source-layer': 'poi', minzoom: lab.tags ? 15 : 14,
-    filter: ['all', inClass(...poiKeys), ['<=', ['get', 'rank'], ['step', ['zoom'], 6, 15, 14, 16, 30, 17, 90]]],
+    filter: ['all', ['any', inClass(...poiKeys), ['match', ['get', 'subclass'], subKeys, true, false]], ['<=', ['get', 'rank'], ['step', ['zoom'], 6, 15, 14, 16, 30, 17, 90]]],
     layout: {
       'icon-image': iconFor, 'icon-size': theme.pixel ? 1.6 : ['interpolate', ['linear'], ['zoom'], 14, 0.8, 18, 1.1],
       'icon-padding': theme.pixel ? 14 : 6, 'symbol-sort-key': ['get', 'rank'],

@@ -14,7 +14,7 @@ export const el = {
   sheet: $('sheet'), sheetTitle: $('sheet-title'), sheetSub: $('sheet-sub'), sheetStats: $('sheet-stats'),
   stDist: $('st-dist'), stDistUnit: $('st-dist-unit'), stTime: $('st-time'), stEta: $('st-eta'),
   go: $('btn-go'), demo: $('btn-demo'), cancel: $('btn-cancel'), end: $('btn-end'),
-  themes: $('themes'), themeGrid: $('theme-grid'), themesClose: $('themes-close'),
+  themes: $('themes'), themeGrid: $('theme-grid'), themesClose: $('themes-close'), driversBtn: $('btn-drivers'),
   arrival: $('arrival'), arrivalTitle: $('arrival-title'), arrivalSub: $('arrival-sub'),
   toast: $('toast'),
 };
@@ -42,6 +42,21 @@ const show = (node, on) => {
 
 // ---- search ------------------------------------------------------------------------------
 
+const CLOCK = '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5a8.5 8.5 0 1 0 0 17 8.5 8.5 0 0 0 0-17z M12 7.5V12l3 2"/></svg>';
+const PIN = '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-6.5-6.2-6.5-11a6.5 6.5 0 0 1 13 0c0 4.8-6.5 11-6.5 11z M12 7.8a2.2 2.2 0 1 0 0 4.4 2.2 2.2 0 0 0 0-4.4z"/></svg>';
+
+function placeRow(p, icon, onPick) {
+  const li = document.createElement('li');
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.innerHTML = `${icon}<div><strong></strong><span></span></div>`;
+  b.querySelector('strong').textContent = p.name;
+  b.querySelector('span').textContent = p.detail || '';
+  b.addEventListener('click', () => onPick(p));
+  li.append(b);
+  return li;
+}
+
 export function renderResults(places, onPick) {
   el.results.replaceChildren();
   if (!places) {
@@ -54,19 +69,28 @@ export function renderResults(places, onPick) {
     li.textContent = 'Nothing found';
     el.results.append(li);
   }
-  for (const p of places) {
-    const li = document.createElement('li');
-    const b = document.createElement('button');
-    b.type = 'button';
-    const name = document.createElement('strong');
-    name.textContent = p.name;
-    const detail = document.createElement('span');
-    detail.textContent = p.detail;
-    b.append(name, detail);
-    b.addEventListener('click', () => onPick(p));
-    li.append(b);
-    el.results.append(li);
+  for (const p of places) el.results.append(placeRow(p, PIN, onPick));
+  show(el.results, true);
+}
+
+/** Recent destinations, shown when the search box is focused and empty. */
+export function renderRecents(places, onPick, onClear) {
+  el.results.replaceChildren();
+  if (!places?.length) {
+    show(el.results, false);
+    return;
   }
+  const head = document.createElement('li');
+  head.className = 'head';
+  const label = document.createElement('span');
+  label.textContent = 'Recent';
+  const clear = document.createElement('button');
+  clear.type = 'button';
+  clear.textContent = 'Clear';
+  clear.addEventListener('click', onClear);
+  head.append(label, clear);
+  el.results.append(head);
+  for (const p of places) el.results.append(placeRow(p, CLOCK, onPick));
   show(el.results, true);
 }
 

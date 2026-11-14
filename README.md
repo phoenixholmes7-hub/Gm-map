@@ -7,6 +7,8 @@ directions and five switchable map skins, packaged as an Android app.
 
 ![GPS lock, search, route preview and arrival](docs/screenshots/flow.png)
 
+![Recent searches, ambient drivers, the style panel and place icons](docs/screenshots/extras.png)
+
 ## Install on Android
 
 Every push builds an installable APK with GitHub Actions.
@@ -24,13 +26,24 @@ Every push builds an installable APK with GitHub Actions.
   **Terminal** (green-phosphor wireframe). Each has its own map colours, label font,
   place icons, player arrow and HUD.
 - **Always-on GPS** with a heading-up, tilted 3D follow camera that zooms out as you speed up.
-- **Search** for a place, or **long-press the map** to drop a waypoint.
+- **Search** for a place, or **long-press the map** to drop a waypoint. Your last eight
+  destinations are saved and offered when you tap the search box.
+- **Place icons** in each theme's style, with specific shapes for 30 kinds of business
+  (barber, clothes, gym, garage, groceries, fast food, cinema and more).
+- **Sound cues** for setting a waypoint, a planned route, starting, upcoming turns,
+  re-routing and arrival. Every theme has its own synthesized set; one button mutes
+  both the cues and the voice.
+- **Ambient drivers**: now and then a few computer-controlled cars with name tags roam
+  nearby streets for atmosphere. They are decoration, not real traffic, and can be turned
+  off in the style panel.
 - **Turn-by-turn navigation**: next-turn banner, distance and ETA, spoken directions,
   automatic re-routing when you leave the route, and an arrival banner.
 - **Demo drive** to try a route without moving.
 - **Speedometer** (tap it to switch mph / km/h), 2D/3D toggle, north-up/heading-up toggle.
-- On Android: the screen stays on, and leaving the app mid-route shrinks it to a floating
-  **picture-in-picture mini-map**.
+- On Android: the screen stays on, Back closes panels before leaving the app, and leaving
+  mid-route shrinks the app to a floating **picture-in-picture mini-map**.
+
+![Place icons in each theme](docs/screenshots/icons.png)
 
 ## How it is built
 
@@ -48,6 +61,8 @@ insets and picture-in-picture.
 | `src/main.js` | Map, player marker, follow camera, navigation state |
 | `src/nav.js`, `src/routing.js` | Turn-by-turn logic and the routing client |
 | `src/location.js`, `src/search.js` | GPS / demo-drive sources and place search |
+| `src/sound.js` | Sound cues, synthesized with Web Audio (no audio files) |
+| `src/traffic.js` | Ambient computer-controlled drivers |
 | `src/platform.js` | Bridge between the web UI and the Android shell |
 | `android/` | Kotlin shell (`MainActivity.kt`) and Gradle build |
 | `vendor/` | MapLibre GL JS and the theme fonts |
@@ -92,7 +107,8 @@ Map data © [OpenStreetMap](https://www.openstreetmap.org/copyright) contributor
 
 - Navigation runs while the app is on screen or in the mini-map. It does not keep going with
   the screen off or the app fully in the background.
-- No live traffic, speed limits or lane guidance.
+- No live traffic, speed limits, lane guidance or community reports (police, hazards).
+  Waze does not offer that data to third-party apps.
 - An internet connection is required; maps are not stored offline.
 - Blockworld shows fewer street names than the other themes, because its low-resolution
   rendering only has room for short upright labels.
@@ -102,5 +118,5 @@ Map data © [OpenStreetMap](https://www.openstreetmap.org/copyright) contributor
 - [MapLibre GL JS](https://maplibre.org) (BSD-3-Clause)
 - Fonts under the SIL Open Font License; see `vendor/fonts/licenses/`
 
-The themes are original designs in familiar game-map genres. This project is not affiliated
-with, or endorsed by, any game or game publisher, and uses no game assets.
+The themes, icons and sounds are original work in familiar game-map genres. This project is
+not affiliated with, or endorsed by, any game or game publisher, and uses no game assets.

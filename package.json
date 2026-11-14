@@ -6,6 +6,6 @@
   "description": "Real-world driving navigation drawn like a video-game map.",
   "scripts": {
     "start": "node tools/serve.mjs",
-    "test": "node --test tests/geo.test.mjs tests/nav.test.mjs"
+    "test": "node --test tests/geo.test.mjs tests/nav.test.mjs tests/sound.test.mjs tests/traffic.test.mjs"
   }
 }
