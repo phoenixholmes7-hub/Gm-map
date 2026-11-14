@@ -2,19 +2,31 @@
 
 import { cumulative, nearestOnLine } from './geo.js';
 
-// OpenStreetMap Germany's public routing server (the one openstreetmap.org itself uses).
-// Fair-use only: one request at a time, no bulk traffic. Swap this for your own server or a
-// commercial provider before shipping to a large audience.
-const ENDPOINT = 'https://routing.openstreetmap.de/routed-car/route/v1/driving';
+// Public OSRM servers, tried in order. Both are free, fair-use services with no uptime promise:
+// OpenStreetMap Germany's router (the one openstreetmap.org uses), then the OSRM project's demo.
+// Point this at your own OSRM server or a commercial provider before shipping to many users.
+const ENDPOINTS = [
+  'https://routing.openstreetmap.de/routed-car/route/v1/driving',
+  'https://router.project-osrm.org/route/v1/driving',
+];
 
 export async function fetchRoute(from, to, { signal } = {}) {
   const pair = `${from[0].toFixed(6)},${from[1].toFixed(6)};${to[0].toFixed(6)},${to[1].toFixed(6)}`;
-  const url = `${ENDPOINT}/${pair}?overview=full&geometries=geojson&steps=true`;
-  const res = await fetch(url, { signal });
-  if (!res.ok) throw new Error(`Routing failed (${res.status})`);
-  const body = await res.json();
-  if (body.code !== 'Ok' || !body.routes?.length) throw new Error('No route found');
-  return normaliseRoute(body.routes[0]);
+  let failure = new Error('Routing unavailable');
+  for (const base of ENDPOINTS) {
+    try {
+      const res = await fetch(`${base}/${pair}?overview=full&geometries=geojson&steps=true`, { signal });
+      const body = await res.json().catch(() => null);
+      // "No route between these points" is a real answer; asking another server won't change it.
+      if (body && body.code && body.code !== 'Ok') throw Object.assign(new Error('No route found'), { final: true });
+      if (!res.ok || !body?.routes?.length) throw new Error(`Routing failed (${res.status})`);
+      return normaliseRoute(body.routes[0]);
+    } catch (err) {
+      if (err.name === 'AbortError' || err.final) throw err;
+      failure = err;
+    }
+  }
+  throw failure;
 }
 
 /** Convert an OSRM route into { coords, cum, distance, duration, steps[] }. */

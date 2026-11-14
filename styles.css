@@ -208,7 +208,7 @@ body[data-theme='heist'] #speed, body[data-theme='neon'] #speed { border-radius:
 }
 #sheet-title { font-family: var(--ui-display); font-size: 22px; line-height: 1.15; letter-spacing: var(--ui-track); text-transform: var(--ui-caps); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 #sheet-sub { margin-top: 4px; font-size: 15px; color: var(--ui-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-#sheet-stats { display: flex; gap: 22px; margin-top: 8px; }
+#sheet-stats { display: flex; flex-wrap: nowrap; gap: 18px; margin-top: 8px; white-space: nowrap; }
 #sheet-stats b { font-family: var(--ui-display); font-size: 26px; font-weight: 400; }
 #sheet-stats span { margin-left: 5px; font-size: 13px; color: var(--ui-dim); text-transform: var(--ui-caps); }
 #sheet-actions { display: flex; gap: 8px; margin-top: 12px; }
@@ -255,6 +255,7 @@ body.navigating #sheet-actions { margin: 0; }
   text-align: center;
   background: linear-gradient(to right, transparent, var(--ui-bg) 18%, var(--ui-bg) 82%, transparent);
   pointer-events: none;
+  z-index: 4;
   animation: arrive 0.5s ease-out;
 }
 #arrival-title { font-family: var(--ui-display); font-size: clamp(30px, 9vw, 56px); line-height: 1.05; color: var(--ui-accent); letter-spacing: 0.04em; text-transform: var(--ui-caps); }
@@ -295,7 +296,10 @@ body[data-theme='frontier'] { --attrib-invert: 0; }
 body[data-theme='blocks'] .panel, body[data-theme='blocks'] .fab { backdrop-filter: none; -webkit-backdrop-filter: none; box-shadow: var(--ui-shadow), inset 3px 3px 0 rgba(255, 255, 255, 0.14), inset -3px -3px 0 rgba(0, 0, 0, 0.3); }
 body[data-theme='blocks'] #banner-dist b { font-size: 22px; }
 body[data-theme='blocks'] #sheet-title, body[data-theme='blocks'] #themes-head strong { font-size: 14px; line-height: 1.5; }
-body[data-theme='blocks'] #sheet-stats b, body[data-theme='blocks'] #speed b { font-size: 17px; }
+body[data-theme='blocks'] #sheet-stats b, body[data-theme='blocks'] #speed b { font-size: 15px; }
+body[data-theme='blocks'] #sheet-stats { gap: 12px; }
+body[data-theme='neon'] #sheet-stats b { font-size: 21px; }
+body[data-theme='neon'] #sheet-stats { gap: 14px; }
 body[data-theme='blocks'] #sheet-actions button, body[data-theme='blocks'] #gps, body[data-theme='blocks'] .fab { font-size: 11px; }
 body[data-theme='blocks'] #arrival-title { font-size: clamp(18px, 6vw, 34px); line-height: 1.4; }
 body[data-theme='frontier'] .panel { box-shadow: var(--ui-shadow), inset 0 0 0 3px rgba(233, 218, 180, 0.94), inset 0 0 0 4px rgba(74, 53, 32, 0.55); }

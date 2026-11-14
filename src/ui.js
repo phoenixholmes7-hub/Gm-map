@@ -150,7 +150,10 @@ export function renderNav(n, units) {
   el.stDistUnit.textContent = r.unit;
   el.stTime.textContent = formatDuration(n.seconds).replace(' min', '');
   el.stTime.nextElementSibling.textContent = n.seconds >= 3570 ? 'time' : 'min';
-  el.stEta.textContent = new Date(Date.now() + n.seconds * 1000).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  // "4:32 PM" becomes a big 4:32 with a small PM beside it; 24-hour locales just get "eta".
+  const [clock, suffix] = new Date(Date.now() + n.seconds * 1000).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }).split(/\s+/);
+  el.stEta.textContent = clock;
+  el.stEta.nextElementSibling.textContent = suffix || 'eta';
 }
 
 export function renderSpeed(mps, units) {

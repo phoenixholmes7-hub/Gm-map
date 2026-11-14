@@ -401,7 +401,7 @@ async function setDestination(place) {
     });
   } catch (err) {
     if (err.name === 'AbortError' || state.dest !== place) return;
-    ui.sheetError(place, navigator.onLine === false ? 'You appear to be offline' : 'No drivable route found');
+    ui.sheetError(place, navigator.onLine === false ? 'You appear to be offline' : err.final ? 'No drivable route found' : 'Routing service unavailable. Try again shortly.');
   }
 }
 
@@ -457,7 +457,10 @@ function endNav({ silent = false, arrived = false } = {}) {
     ui.toast('Navigation ended');
   }
   // After a demo, hand the marker back to the real GPS position if there is one.
-  if (state.fix?.simulated) state.fix = null;
+  if (state.fix?.simulated) {
+    state.fix = null;
+    el.speed.hidden = true;
+  }
 }
 
 async function reroute() {
