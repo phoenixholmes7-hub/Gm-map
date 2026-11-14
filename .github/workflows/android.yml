@@ -28,6 +28,14 @@ jobs:
       - name: Collect APK
         run: cp android/app/build/outputs/apk/debug/app-debug.apk gm-map.apk
 
+      - name: Check the map UI is bundled in the APK
+        run: |
+          unzip -l gm-map.apk > apk-contents.txt
+          for f in index.html styles.css src/main.js vendor/maplibre/maplibre-gl.mjs vendor/maplibre/maplibre-gl-worker.mjs vendor/fonts/oswald.woff2; do
+            grep -q "assets/www/$f" apk-contents.txt || { echo "Missing from APK: $f"; exit 1; }
+          done
+          echo "Bundled web files: $(grep -c 'assets/www/' apk-contents.txt)"
+
       - uses: actions/upload-artifact@v7
         with:
           name: gm-map-apk
